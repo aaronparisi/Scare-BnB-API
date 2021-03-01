@@ -4,6 +4,9 @@
 #
 #  id              :bigint           not null, primary key
 #  email           :string
+#  guest_rating    :decimal(10, 2)
+#  host_rating     :decimal(10, 2)
+#  image_url       :string
 #  password_digest :string
 #  session_token   :string
 #  username        :string           not null
@@ -13,11 +16,19 @@
 class User < ApplicationRecord
   has_secure_password
 
-  validates :username, :email, presence: true, uniqueness: true
+  validates :username, :email, :image_url, presence: true, uniqueness: true
   validates :password_digest, :session_token, presence: true
   validates :password, length: { minimum: 6 }, allow_nil: true
+  validates :guest_rating, :host_rating, inclusion: { in: 0...5 }, allow_nil: true
 
   after_initialize :ensure_session_token
+
+  has_many :managed_properties, class_name: :Property, foreign_key: "manager_id"
+
+  # has_many :managed_bookings, through: :Property, source: :bookings  ? necessary?
+
+  has_many :bookings, class_name: :Booking, foreign_key: "guest_id"
+  has_many :booked_properties, through: :bookings, source: :property
 
   def self.find_by_credentials(username, password)
     user = User.find_by(username: username)

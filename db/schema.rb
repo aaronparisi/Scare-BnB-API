@@ -10,10 +10,47 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_02_27_000326) do
+ActiveRecord::Schema.define(version: 2021_03_01_014413) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "addresses", force: :cascade do |t|
+    t.string "line_1", null: false
+    t.string "line_2"
+    t.string "city", null: false
+    t.string "state", null: false
+    t.integer "zip", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "bookings", force: :cascade do |t|
+    t.bigint "property_id", null: false
+    t.bigint "guest_id", null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["guest_id"], name: "index_bookings_on_guest_id"
+    t.index ["property_id"], name: "index_bookings_on_property_id"
+  end
+
+  create_table "properties", force: :cascade do |t|
+    t.bigint "address_id", null: false
+    t.integer "beds", null: false
+    t.integer "baths", null: false
+    t.integer "square_feet", null: false
+    t.boolean "smoking", null: false
+    t.boolean "pets", null: false
+    t.decimal "nightly_rate", precision: 10, scale: 2, null: false
+    t.text "description", null: false
+    t.bigint "manager_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["address_id"], name: "index_properties_on_address_id"
+    t.index ["manager_id"], name: "index_properties_on_manager_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "email"
@@ -22,6 +59,13 @@ ActiveRecord::Schema.define(version: 2021_02_27_000326) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "username", null: false
+    t.decimal "guest_rating", precision: 10, scale: 2
+    t.decimal "host_rating", precision: 10, scale: 2
+    t.string "image_url"
   end
 
+  add_foreign_key "bookings", "properties"
+  add_foreign_key "bookings", "users", column: "guest_id"
+  add_foreign_key "properties", "addresses"
+  add_foreign_key "properties", "users", column: "manager_id"
 end
