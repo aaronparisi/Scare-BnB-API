@@ -21,8 +21,20 @@
 #  fk_rails_...  (property_id => properties.id)
 #
 class Booking < ApplicationRecord
-  validates: :start_date, :end_date, presence: true
+  validates :start_date, :end_date, presence: true
+  # before_create :ensure_available
   
   belongs_to :property
   belongs_to :guest, class_name: :User, foreign_key: "guest_id"
+
+  def ensure_available
+    return Property.find(self.property_id).is_available?(self.start_date, self.end_date)
+  end
+  
+  def collides?(startDate, endDate)
+    # returns true if this booking's date range crosses over the given range at all
+    return (self.start_date.between?(startDate, endDate)) || (self.end_date.between?(startDate, endDate))
+    # return (self.endDate.between?(self.startDate, startDate)) || (self.startDate.between?(endDate, self.endDate))  # * another option
+  end
+  
 end

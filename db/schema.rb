@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_03_01_014413) do
+ActiveRecord::Schema.define(version: 2021_03_01_210644) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -23,6 +23,8 @@ ActiveRecord::Schema.define(version: 2021_03_01_014413) do
     t.integer "zip", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.bigint "property_id"
+    t.index ["property_id"], name: "index_addresses_on_property_id"
   end
 
   create_table "bookings", force: :cascade do |t|
@@ -37,7 +39,6 @@ ActiveRecord::Schema.define(version: 2021_03_01_014413) do
   end
 
   create_table "properties", force: :cascade do |t|
-    t.bigint "address_id", null: false
     t.integer "beds", null: false
     t.integer "baths", null: false
     t.integer "square_feet", null: false
@@ -48,7 +49,7 @@ ActiveRecord::Schema.define(version: 2021_03_01_014413) do
     t.bigint "manager_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["address_id"], name: "index_properties_on_address_id"
+    t.string "title"
     t.index ["manager_id"], name: "index_properties_on_manager_id"
   end
 
@@ -64,8 +65,8 @@ ActiveRecord::Schema.define(version: 2021_03_01_014413) do
     t.string "image_url"
   end
 
+  add_foreign_key "addresses", "properties"
   add_foreign_key "bookings", "properties"
   add_foreign_key "bookings", "users", column: "guest_id"
-  add_foreign_key "properties", "addresses"
   add_foreign_key "properties", "users", column: "manager_id"
 end

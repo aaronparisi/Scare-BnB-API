@@ -1,4 +1,5 @@
 class Api::UsersController < ApplicationController
+  before_action :selected_user, only: [:show, :guest, :manager, :update, :destroy]
   skip_before_action :verify_authenticity_token, only: [:create, :update]
 
   def loggedInUser
@@ -8,6 +9,19 @@ class Api::UsersController < ApplicationController
     else
       render json: ""
     end
+  end
+
+  def show
+    
+  end
+
+  def guest
+    # ? include bookings?
+  end
+  
+  
+  def manager
+    # ? include properties?
   end
   
   def create
@@ -21,7 +35,6 @@ class Api::UsersController < ApplicationController
   end
   
   def update
-    @user = selected_user
     if @user && @user.update_attributes(user_params)
       render :show
     elsif !@user
@@ -31,16 +44,7 @@ class Api::UsersController < ApplicationController
     end
   end
   
-  def show
-    @user = selected_user
-  end
-  
-  def index
-    @users = User.all
-  end
-  
   def destroy
-    @user = selected_user
     if @user
       @user.destroy
       render :show
@@ -52,7 +56,7 @@ class Api::UsersController < ApplicationController
   private
   
   def selected_user
-    User.find(params[:id])
+    @user = User.find(params[:id])
   end
   
   def user_params
