@@ -4,6 +4,7 @@ Rails.application.routes.draw do
       
       collection do
         get '/current-user', to: 'users#loggedInUser'
+        # ! this really doesn't have to be in here but I guess it's fine
       end
 
       member do
@@ -16,6 +17,7 @@ Rails.application.routes.draw do
     end
 
     resources :properties, only: [:index, :show, :create, :update, :destroy]
+    resources :bookings, only: [:show, :create, :update, :destroy]
 
     resource :session, only: [:create, :destroy]
   end

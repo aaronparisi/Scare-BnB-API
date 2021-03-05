@@ -29,10 +29,10 @@ class Property < ApplicationRecord
 
   belongs_to :manager, class_name: :User, foreign_key: "manager_id"
 
-  has_many :bookings, class_name: :Booking, foreign_key: "property_id"
+  has_many :bookings, class_name: :Booking, foreign_key: "property_id", dependent: :destroy
   has_many :guests, through: :bookings, source: :guest
 
-  has_one :address, class_name: :Address, foreign_key: "property_id"
+  has_one :address, class_name: :Address, foreign_key: "property_id", dependent: :destroy  # ? is this appropriate here?
 
   def is_available?(startDate, endDate)
     # returns true if property has no conflicting bookings,

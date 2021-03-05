@@ -1,7 +1,8 @@
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
     origins 'http://localhost:8080', 
-      'http://localhost:5000'
+      'http://localhost:5000',
+      'http://localhost:8000'
       # 'https://www.frontend-auth-ca586.firebaseapp.com', 
       # 'http://www.frontend-auth-ca586.firebaseapp.com', 
       # 'https://frontend-auth-ca586.firebaseapp.com', 

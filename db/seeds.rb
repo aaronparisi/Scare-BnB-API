@@ -19,15 +19,38 @@ Address.destroy_all
 Property.destroy_all
 User.destroy_all
 
-locations = []
-characters = []
+locations = [
+  "Simpson_House",
+  "Kwik-e-Mart",
+  "Springfield_Cemetery",
+  "Springfield_Police_Station",
+  "Krustyland",
+  "Flanders_House",
+  "Springfield_Nuclear_Power_Plant",
+  "The_First_Church_of_Springfield",
+  "Springfield_Elementary_School",
+  "Moes_Tavern"
+]
+
+characters = [
+  "Homer_Simpson",
+  "Apu_Nahasapeemapetilon",
+  "Maggie_Simpson",
+  "Chief_Wiggum",
+  "Krusty_the_Clown",
+  "Ned_Flanders",
+  "Mr_Burns",
+  "Reverend_Lovejoy",
+  "Edna_Krabappel",
+  "Moe_Szyslak"
+]
 
 numLocations = 10
 
-until locations.length == numLocations do
-  locations.push Faker::TvShows::Simpsons.location
-  locations = locations.uniq
-end
+# until locations.length == numLocations do
+#   locations.push Faker::TvShows::Simpsons.location
+#   locations = locations.uniq
+# end
 
 until characters.length == numLocations * 2 do
   characters.push Faker::TvShows::Simpsons.character.split(' ').join('_')
