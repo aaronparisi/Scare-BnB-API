@@ -8,6 +8,8 @@ class Api::SessionsController < ApplicationController
       render json: ['Nope. Wrong credentials!'], status: 401
     else
       login!(@user)
+      id = @user.id
+      @user = User.includes(:bookings).find(id)
       render 'api/users/show';
     end
   end
