@@ -1,3 +1,4 @@
+json.id property.id
 json.title property.title
 json.description property.description
 json.beds property.beds

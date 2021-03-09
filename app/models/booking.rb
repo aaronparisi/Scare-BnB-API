@@ -22,19 +22,33 @@
 #
 class Booking < ApplicationRecord
   validates :start_date, :end_date, presence: true
-  # before_create :ensure_available
+  validate :ensure_available
+  validate :end_not_before_start
   
   belongs_to :property
   belongs_to :guest, class_name: :User, foreign_key: "guest_id"
 
   def ensure_available
-    return Property.find(self.property_id).is_available?(self.start_date, self.end_date)
+    if Property.find(self.property_id).is_available?(self.start_date, self.end_date)
+      self.errors.add :property_id, " - This property is not available for some / all of the time you selected"
+    end
   end
+
+  def end_not_before_start
+    if self.start_date >= self.end_date
+      self.errors.add :end_date, "cannot be before start date"
+    end
+  end
+  
   
   def collides?(startDate, endDate)
     # returns true if this booking's date range crosses over the given range at all
-    return (self.start_date.between?(startDate, endDate)) || (self.end_date.between?(startDate, endDate))
-    # return (self.endDate.between?(self.startDate, startDate)) || (self.startDate.between?(endDate, self.endDate))  # * another option
+    return (
+      (self.start_date === startDate) || 
+      (self.end_date === endDate) || 
+      (self.start_date.between?(startDate, endDate)) || 
+      (self.end_date.between?(startDate, endDate))
+    )
   end
   
 end

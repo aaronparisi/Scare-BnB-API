@@ -1,5 +1,6 @@
 class Api::BookingsController < ApplicationController
   before_action :find_booking, only: [:show, :update, :destroy]
+  skip_before_action :verify_authenticity_token, only: [:create, :update]
 
   def index
     @bookings = Booking.where(guest_id: params[:id]).includes(:property, :guest)

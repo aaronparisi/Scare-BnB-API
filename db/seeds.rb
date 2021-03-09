@@ -58,7 +58,7 @@ until characters.length == numLocations * 2 do
 end
 
 # first 10 characters are managers aka hosts
-for i in (0...numLocations-1) do
+for i in (0..numLocations-1) do
   managerName = characters[i]
   locationName = locations[i]
 
@@ -68,7 +68,7 @@ for i in (0...numLocations-1) do
   anAddress = Address.create(line_1: Faker::Address.street_address, line_2: Faker::Address.secondary_address, city: 'Springfield', state: 'North Takoma', zip: 192005, property_id: aProperty.id)
 end
 
-for i in (0...numLocations-1) do
+for i in (0..numLocations-1) do
   guestName = characters[i+numLocations]
   aGuest = User.create(username: guestName, email: "#{guestName}@springfieldbnb.com", password: 'password', image_url: guestName)
 
