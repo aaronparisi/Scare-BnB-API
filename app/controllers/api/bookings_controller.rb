@@ -3,7 +3,15 @@ class Api::BookingsController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [:create, :update]
 
   def index
-    @bookings = Booking.where(guest_id: params[:id]).includes(:property, :guest)
+    current_uri = request.env['PATH_INFO']
+
+    if current_uri.include?('properties')
+      # we are getting bookings for a property
+      @bookings = Booking.where(property_id: params[:id]).includes(:property, :guest)
+    else
+      # we are getting bookings for a guest
+      @bookings = Booking.where(guest_id: params[:id]).includes(:property, :guest)
+    end
     # ? include other info?
   end
 

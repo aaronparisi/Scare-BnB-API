@@ -16,7 +16,11 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :properties, only: [:index, :show, :create, :update, :destroy]
+    resources :properties, only: [:index, :show, :create, :update, :destroy] do
+      member do
+        get 'bookings', to: 'bookings#index'
+      end
+    end
     resources :bookings, only: [:show, :create, :update, :destroy]
 
     resource :session, only: [:create, :destroy]
