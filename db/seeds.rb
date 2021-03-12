@@ -72,13 +72,14 @@ for i in (0..numLocations-1) do
   guestName = characters[i+numLocations]
   aGuest = User.create(username: guestName, email: "#{guestName}@springfieldbnb.com", password: 'password', image_url: guestName)
 
-  startDate1 = Date.today + 7
-  endDate1 = startDate1 + 3
-  propId1 = i % (numLocations-1) + 1
+  # startDate1 = Date.today + 7
+  startDate1 = DateTime.now.advance({ days: 7 }).change({ hour: 16 })
+  endDate1 = startDate1.advance({ days: 3 })
+  propId1 = i % (numLocations) + 1
   booking1 = Booking.create(start_date: startDate1, end_date: endDate1, guest_id: aGuest.id, property_id: propId1)
 
-  startDate2 = Date.today + 14
-  endDate2 = startDate2 + 3
-  propId2 = (i+1) % (numLocations-1) + 1
+  startDate2 = DateTime.now.advance({ days: 14 }).change({ hour: 16 })
+  endDate2 = startDate2.advance({ days: 3 })
+  propId2 = (i+1) % (numLocations) + 1
   booking2 = Booking.create(start_date: startDate2, end_date: endDate2, guest_id: aGuest.id, property_id: propId2)
 end

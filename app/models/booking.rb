@@ -3,8 +3,8 @@
 # Table name: bookings
 #
 #  id          :bigint           not null, primary key
-#  end_date    :date             not null
-#  start_date  :date             not null
+#  end_date    :datetime         not null
+#  start_date  :datetime         not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  guest_id    :bigint           not null
@@ -29,7 +29,8 @@ class Booking < ApplicationRecord
   belongs_to :guest, class_name: :User, foreign_key: "guest_id"
 
   def ensure_available
-    if Property.find(self.property_id).is_available?(self.start_date, self.end_date)
+
+    if ! Property.find(self.property_id).is_available?(self.start_date, self.end_date)
       self.errors.add :property_id, " - This property is not available for some / all of the time you selected"
     end
   end
@@ -44,8 +45,8 @@ class Booking < ApplicationRecord
   def collides?(startDate, endDate)
     # returns true if this booking's date range crosses over the given range at all
     return (
-      (self.start_date === startDate) || 
-      (self.end_date === endDate) || 
+      (self.start_date == startDate) || 
+      (self.end_date == endDate) || 
       (self.start_date.between?(startDate, endDate)) || 
       (self.end_date.between?(startDate, endDate))
     )

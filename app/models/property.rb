@@ -37,9 +37,10 @@ class Property < ApplicationRecord
   def is_available?(startDate, endDate)
     # returns true if property has no conflicting bookings,
     # else, false
-    return self.bookings
+    ret = self.bookings
       .map { |booking| booking.collides?(startDate, endDate) }
-      .any? { |bookingBool| bookingBool }
+      .none? { |bookingBool| bookingBool }
+    return ret;
   end
   
 end

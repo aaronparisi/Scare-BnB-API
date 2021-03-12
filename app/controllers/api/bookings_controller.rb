@@ -1,6 +1,6 @@
 class Api::BookingsController < ApplicationController
   before_action :find_booking, only: [:show, :update, :destroy]
-  skip_before_action :verify_authenticity_token, only: [:create, :update]
+  skip_before_action :verify_authenticity_token, only: [:create, :update, :destroy]
 
   def index
     current_uri = request.env['PATH_INFO']
@@ -13,6 +13,7 @@ class Api::BookingsController < ApplicationController
       @bookings = Booking.where(guest_id: params[:id]).includes(:property, :guest)
     end
     # ? include other info?
+    render :index
   end
 
   def managedIndex
@@ -25,6 +26,9 @@ class Api::BookingsController < ApplicationController
 
   def create
     @booking = Booking.new(booking_params)
+    @booking.start_date = @booking.start_date.to_datetime.change({ hour: 16 })
+    @booking.end_date = @booking.end_date.to_datetime.change({ hour: 16 })
+    
     if @booking.save
       render :show
     else
