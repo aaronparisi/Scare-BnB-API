@@ -13,7 +13,7 @@ class Api::UsersController < ApplicationController
   end
 
   def show
-    @user = User.includes(:bookings).find(params[:id])
+    @user = User.includes(:bookings, :made_manager_ratings).find(params[:id])
   end
 
   def guest

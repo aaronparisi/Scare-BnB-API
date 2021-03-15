@@ -13,9 +13,16 @@ Rails.application.routes.draw do
         get 'guest', to: 'users#guest'
         get 'bookings', to: 'bookings#index'
         get 'managed-bookings', to: 'bookings#managedIndex'
+      end
+    end
 
-        put 'add-manager-rating', to: 'ratings#addManagerRating'
-        put 'add-guest-rating', to: 'ratings#addGuestRating'
+    resources :ratings do
+      collection do
+        post 'add-manager-rating', to: 'ratings#addManagerRating'
+        post 'add-guest-rating', to: 'ratings#addGuestRating'
+  
+        put 'update-manager-rating', to: 'ratings#updateManagerRating'
+        put 'update-guest-rating', to: 'ratings#updateGuestRating'
       end
     end
 

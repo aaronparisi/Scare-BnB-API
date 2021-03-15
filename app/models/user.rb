@@ -27,18 +27,30 @@ class User < ApplicationRecord
   has_many :bookings, class_name: :Booking, foreign_key: "guest_id", dependent: :destroy
   has_many :booked_properties, through: :bookings, source: :property
 
-  has_many :received_manager_ratings, class_name: :ManagerRating, foreign_key: :manager_id
-  has_many :made_manager_ratings, class_name: :GuestRating, foreign_key: :manager_id
+  has_many :received_manager_ratings, 
+    class_name: :ManagerRating, 
+    foreign_key: :manager_id, 
+    dependent: :destroy
+  has_many :made_manager_ratings, 
+    class_name: :ManagerRating, 
+    foreign_key: :guest_id, 
+    dependent: :destroy
 
-  has_many :received_guest_ratings, class_name: :GuestRating, foreign_key: :guest_id
-  has_many :made_guest_ratings, class_name: :ManagerRating, foreign_key: :guest_id
+  has_many :received_guest_ratings, 
+    class_name: :GuestRating, 
+    foreign_key: :guest_id, 
+    dependent: :destroy
+  has_many :made_guest_ratings, 
+    class_name: :GuestRating, 
+    foreign_key: :manager_id, 
+    dependent: :destroy
 
   def guest_rating
-    return self.received_guest_ratings.average(:rating)
+    return self.received_guest_ratings.average(:rating) || 0
   end
   
   def manager_rating
-    return self.received_manager_ratings.average(:rating)
+    return self.received_manager_ratings.average(:rating) || 0
   end
   
   def self.find_by_credentials(username, password)
