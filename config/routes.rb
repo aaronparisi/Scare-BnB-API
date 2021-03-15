@@ -13,6 +13,9 @@ Rails.application.routes.draw do
         get 'guest', to: 'users#guest'
         get 'bookings', to: 'bookings#index'
         get 'managed-bookings', to: 'bookings#managedIndex'
+
+        put 'add-manager-rating', to: 'ratings#addManagerRating'
+        put 'add-guest-rating', to: 'ratings#addGuestRating'
       end
     end
 

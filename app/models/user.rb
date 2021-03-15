@@ -4,8 +4,6 @@
 #
 #  id              :bigint           not null, primary key
 #  email           :string
-#  guest_rating    :decimal(10, 2)
-#  host_rating     :decimal(10, 2)
 #  image_url       :string
 #  password_digest :string
 #  session_token   :string
@@ -19,7 +17,6 @@ class User < ApplicationRecord
   validates :username, :email, presence: true, uniqueness: true
   validates :password_digest, :session_token, presence: true
   validates :password, length: { minimum: 6 }, allow_nil: true
-  validates :guest_rating, :host_rating, inclusion: { in: 0...5 }, allow_nil: true
 
   after_initialize :ensure_session_token
 
@@ -30,6 +27,20 @@ class User < ApplicationRecord
   has_many :bookings, class_name: :Booking, foreign_key: "guest_id", dependent: :destroy
   has_many :booked_properties, through: :bookings, source: :property
 
+  has_many :received_manager_ratings, class_name: :ManagerRating, foreign_key: :manager_id
+  has_many :made_manager_ratings, class_name: :GuestRating, foreign_key: :manager_id
+
+  has_many :received_guest_ratings, class_name: :GuestRating, foreign_key: :guest_id
+  has_many :made_guest_ratings, class_name: :ManagerRating, foreign_key: :guest_id
+
+  def guest_rating
+    return self.received_guest_ratings.average(:rating)
+  end
+  
+  def manager_rating
+    return self.received_manager_ratings.average(:rating)
+  end
+  
   def self.find_by_credentials(username, password)
     user = User.find_by(username: username)
     return nil unless user

@@ -1,0 +1,2 @@
+class ManagerRating < Rating
+end

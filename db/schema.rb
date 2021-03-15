@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_03_12_180413) do
+ActiveRecord::Schema.define(version: 2021_03_15_202711) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -53,6 +53,17 @@ ActiveRecord::Schema.define(version: 2021_03_12_180413) do
     t.index ["manager_id"], name: "index_properties_on_manager_id"
   end
 
+  create_table "ratings", force: :cascade do |t|
+    t.bigint "manager_id", null: false
+    t.bigint "guest_id", null: false
+    t.integer "rating", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.string "type"
+    t.index ["guest_id"], name: "index_ratings_on_guest_id"
+    t.index ["manager_id"], name: "index_ratings_on_manager_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email"
     t.string "password_digest"
@@ -60,8 +71,6 @@ ActiveRecord::Schema.define(version: 2021_03_12_180413) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "username", null: false
-    t.decimal "guest_rating", precision: 10, scale: 2
-    t.decimal "host_rating", precision: 10, scale: 2
     t.string "image_url"
   end
 
@@ -69,4 +78,6 @@ ActiveRecord::Schema.define(version: 2021_03_12_180413) do
   add_foreign_key "bookings", "properties"
   add_foreign_key "bookings", "users", column: "guest_id"
   add_foreign_key "properties", "users", column: "manager_id"
+  add_foreign_key "ratings", "users", column: "guest_id"
+  add_foreign_key "ratings", "users", column: "manager_id"
 end

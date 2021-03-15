@@ -1,7 +1,7 @@
 class Api::UsersController < ApplicationController
   before_action :selected_user, only: [:guest, :manager, :update, :destroy]
   skip_before_action :verify_authenticity_token, only: [:create, :update]
-
+  
   def loggedInUser
     @user = current_user
     if @user

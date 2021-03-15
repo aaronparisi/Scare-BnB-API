@@ -1,0 +1,2 @@
+class GuestRating < Rating
+end
