@@ -22,7 +22,16 @@ class Api::UsersController < ApplicationController
   
   
   def manager
-    # ? include properties?
+    render partial: 'api/users/user_plus_rating', 
+      locals: { 
+        user: @user, 
+        manager_rating: @user.manager_rating, 
+        made_ratings: Rating.where(
+          type: "ManagerRating", 
+          guest_id: current_user.id, 
+          manager_id: @user.id
+        )
+      }
   end
   
   def create

@@ -8,7 +8,7 @@ class Api::RatingsController < ApplicationController
       @user = User.find(@rating.manager_id)
       # render partial: 'api/users/user', locals: { user: @user, manager_rating: @user.manager_rating }
       render partial: 'api/users/user_plus_rating', 
-        locals: { user: @user, manager_rating: @user.manager_rating, made_rating: @rating}
+        locals: { user: @user, manager_rating: @user.manager_rating, made_ratings: [@rating]}
     else
       render json: @rating.errors.full_messages, status: 401
     end
@@ -21,7 +21,7 @@ class Api::RatingsController < ApplicationController
     if @rating.save
       @user = User.find(@rating.manager_id)
       render partial: 'api/users/user_plus_rating', 
-        locals: { user: @user, manager_rating: @user.manager_rating, made_rating: @rating}
+        locals: { user: @user, manager_rating: @user.manager_rating, made_ratings: [@rating]}
     else
       render json: @rating.errors.full_messages, status: 401
     end
