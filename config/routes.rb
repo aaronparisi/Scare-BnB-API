@@ -13,6 +13,7 @@ Rails.application.routes.draw do
         get 'guest', to: 'users#guest'
         get 'bookings', to: 'bookings#index'
         get 'managed-bookings', to: 'bookings#managedIndex'
+        put 'update-image-url', to: 'users#updateImageUrl'
       end
     end
 

@@ -1,6 +1,11 @@
 class Api::UsersController < ApplicationController
   before_action :selected_user, only: [:guest, :manager, :update, :destroy]
-  skip_before_action :verify_authenticity_token, only: [:create, :update]
+  skip_before_action :verify_authenticity_token, only: [:create, :update, :updateImageUrl]
+
+  def updateImageUrl
+    @user = User.find(params[:userId])
+    @user.update(image_url: params[:newImageUrl])
+  end
   
   def loggedInUser
     @user = current_user
