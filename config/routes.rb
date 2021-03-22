@@ -35,6 +35,8 @@ Rails.application.routes.draw do
     resources :bookings, only: [:show, :create, :update, :destroy]
 
     resource :session, only: [:create, :destroy]
+
+    resources :addresses, only: [:create]
   end
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   match '*path', via: [:options], to: lambda {|_| [204, { 'Content-Type' => 'text/plain' }]}

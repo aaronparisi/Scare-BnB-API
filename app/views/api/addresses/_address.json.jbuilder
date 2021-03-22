@@ -1,1 +1,1 @@
-json.extract! address, :line_1, :line_2, :city, :state, :zip
+json.extract! address, :line_1, :line_2, :city, :state, :zip, :property_id

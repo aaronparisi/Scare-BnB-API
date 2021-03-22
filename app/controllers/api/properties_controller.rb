@@ -1,5 +1,6 @@
 class Api::PropertiesController < ApplicationController
   before_action :find_property, only: [:update, :destoy]
+  skip_before_action :verify_authenticity_token, only: [:create]
 
   def index
     if params[:id]
@@ -46,7 +47,7 @@ class Api::PropertiesController < ApplicationController
   end
   
   def property_params
-    params.require(:property).permit(:baths, :beds, :description, :nightly_rate, :pets, :smoking, :square_feet, :address, :manager_id)
+    params.require(:property).permit(:title, :baths, :beds, :description, :nightly_rate, :pets, :smoking, :square_feet, :manager_id)
   end
   
 end

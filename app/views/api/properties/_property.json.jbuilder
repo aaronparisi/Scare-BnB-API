@@ -9,8 +9,10 @@ json.smoking property.smoking
 json.square_feet property.square_feet
 json.manager_id property.manager_id
 
-json.address do
-  json.partial! 'api/addresses/address', address: property.address
+if property.address
+  json.address do
+    json.partial! 'api/addresses/address', address: property.address
+  end
 end
 
 # json.manager do
