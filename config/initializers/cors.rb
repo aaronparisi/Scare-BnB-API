@@ -3,16 +3,10 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     origins 'http://localhost:8080', 
       'http://localhost:5000',
       'http://localhost:8000',
-      'https://springfield-bnb-frontend.web.app'
-      'http://springfield-bnb-frontend.web.app'
-      # 'https://www.frontend-auth-ca586.firebaseapp.com', 
-      # 'http://www.frontend-auth-ca586.firebaseapp.com', 
-      # 'https://frontend-auth-ca586.firebaseapp.com', 
-      # 'http://frontend-auth-ca586.firebaseapp.com', 
-      # 'http://www.frontend-auth.aaronparisidev.com', 
-      # 'https://www.frontend-auth.aaronparisidev.com', 
-      # 'http://frontend-auth.aaronparisidev.com',
-      # 'https://frontend-auth.aaronparisidev.com'
+      'https://springfield-bnb.aaronparisidev.com',
+      'http://springfield-bnb.aaronparisidev.com',
+      'https://www.springfield-bnb.aaronparisidev.com',
+      'http://www.springfield-bnb.aaronparisidev.com'
 
     resource '*',
       headers: :any,
