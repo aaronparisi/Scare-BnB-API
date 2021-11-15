@@ -42,7 +42,17 @@ characters = [
   "Mr_Burns",
   "Reverend_Lovejoy",
   "Edna_Krabappel",
-  "Moe_Szyslak"
+  "Moe_Szyslak",
+  "Baby_Gerald",
+  "Cletus_Spuckler",
+  "Database",
+  "Dewey_Largo",
+  "Frankie_the_Squealer",
+  "Kirk_Van_Houten",
+  "Lindsey_Naegle",
+  "Poor_Violet",
+  "Rod_Flanders",
+  "Superintendent_Gary_Chalmers"
 ]
 
 numLocations = 10
@@ -52,25 +62,42 @@ numLocations = 10
 #   locations = locations.uniq
 # end
 
-until characters.length == numLocations * 2 do
-  characters.push Faker::TvShows::Simpsons.character.split(' ').join('_')
-  characters = characters.uniq
-end
+# until characters.length == numLocations * 2 do
+#   characters.push Faker::TvShows::Simpsons.character.split(' ').join('_')
+#   characters = characters.uniq
+# end
 
 # first 10 characters are managers aka hosts
 for i in (0..numLocations-1) do
   managerName = characters[i]
   locationName = locations[i]
 
-  aManager = User.create(username: managerName, email: "#{managerName}@springfieldbnb.com", password: 'password', image_url: managerName)
+  aManager = User.create(
+    username: managerName, 
+    email: "#{managerName}@springfieldbnb.com", 
+    password: 'password', 
+    ##image_url: `users/${this.props.user.id-1}/avatar`
+    image_url: "users/#{managerName}/avatar.png"
+  )
 
-  aProperty = Property.create(beds: rand(1...5), baths: rand(1...4), pets: true, smoking: false, square_feet: rand(5000), nightly_rate: rand(25...5000), description: Faker::TvShows::Simpsons.quote, title: locationName, manager_id: aManager.id)
+  aProperty = Property.create(
+    beds: rand(1...5), 
+    baths: rand(1...4), 
+    pets: true, 
+    smoking: false, 
+    square_feet: rand(5000), 
+    nightly_rate: rand(25...5000), 
+    description: Faker::TvShows::Simpsons.quote, 
+    title: locationName, 
+    manager_id: aManager.id,
+    image_directory: "/users/#{managerName}/properties/#{locationName}/"
+  )
   anAddress = Address.create(line_1: Faker::Address.street_address, line_2: Faker::Address.secondary_address, city: 'Springfield', state: 'North Takoma', zip: 192005, property_id: aProperty.id)
 end
 
 for i in (0..numLocations-1) do
   guestName = characters[i+numLocations]
-  aGuest = User.create(username: guestName, email: "#{guestName}@springfieldbnb.com", password: 'password', image_url: guestName)
+  aGuest = User.create(username: guestName, email: "#{guestName}@springfieldbnb.com", password: 'password', image_url: "users/#{guestName}/avatar.png")
 
   # startDate1 = Date.today + 7
   startDate1 = DateTime.now.advance({ days: 7 }).change({ hour: 16 })
