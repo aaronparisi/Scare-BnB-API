@@ -2,8 +2,11 @@ class Api::RatingsController < ApplicationController
   skip_before_action :verify_authenticity_token  
 
   def updateManagerRating
-    @rating = ManagerRating.find_by(guest_id: params[:rating][:guest_id])
-
+    @rating = ManagerRating.find_by(
+      guest_id: params[:rating][:guest_id], 
+      manager_id: params[:rating][:manager_id]
+    )
+  
     if @rating.update(rating: params[:rating][:rating])
       @user = User.find(@rating.manager_id)
       # render partial: 'api/users/user', locals: { user: @user, manager_rating: @user.manager_rating }
