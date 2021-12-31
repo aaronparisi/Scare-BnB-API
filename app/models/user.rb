@@ -4,7 +4,6 @@
 #
 #  id              :bigint           not null, primary key
 #  email           :string
-#  image_url       :string
 #  password_digest :string
 #  session_token   :string
 #  username        :string           not null
@@ -38,12 +37,14 @@ class User < ApplicationRecord
 
   has_many :received_guest_ratings, 
     class_name: :GuestRating, 
-    foreign_key: :guest_id, 
+    foreign_key: :guest_id,
     dependent: :destroy
   has_many :made_guest_ratings, 
     class_name: :GuestRating, 
     foreign_key: :manager_id, 
     dependent: :destroy
+
+  has_one_attached :avatar
 
   def guest_rating
     return self.received_guest_ratings.average(:rating) || 0
@@ -82,5 +83,9 @@ class User < ApplicationRecord
     self.session_token = SecureRandom.urlsafe_base64
     self.save
     self.session_token
+  end
+
+  def avatar_url
+    return self.avatar.representation({}).processed.url
   end
 end

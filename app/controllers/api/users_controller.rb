@@ -1,11 +1,6 @@
 class Api::UsersController < ApplicationController
   before_action :selected_user, only: [:guest, :manager, :update, :destroy]
-  skip_before_action :verify_authenticity_token, only: [:create, :update, :updateImageUrl, :destroy]
-
-  def updateImageUrl
-    @user = User.find(params[:userId])
-    @user.update(image_url: params[:newImageUrl])
-  end
+  skip_before_action :verify_authenticity_token, only: [:create, :update, :destroy]
   
   def loggedInUser
     @user = current_user
@@ -42,7 +37,9 @@ class Api::UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     if @user.save
+      @user.avatar.attach(params[:user][:avatar]) if params[:user][:avatar]
       login!(@user)
+
       render :show
     else
       render json: @user.errors.full_messages, status: 401
@@ -51,6 +48,8 @@ class Api::UsersController < ApplicationController
   
   def update
     if @user && @user.update_attributes(user_params)
+      @user.avatar.attach(params[:user][:avatar]) if params[:user][:avatar]
+
       render :show
     elsif !@user
       render json: ['Could not locate user'], status: 400
@@ -75,6 +74,6 @@ class Api::UsersController < ApplicationController
   end
   
   def user_params
-    params.require(:user).permit(:username, :email, :password)
+    params.require(:user).permit(:username, :email, :password, :avatar)
   end
 end

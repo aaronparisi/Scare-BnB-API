@@ -2,19 +2,18 @@
 #
 # Table name: properties
 #
-#  id              :bigint           not null, primary key
-#  baths           :integer          not null
-#  beds            :integer          not null
-#  description     :text             not null
-#  image_directory :string
-#  nightly_rate    :decimal(10, 2)   not null
-#  pets            :boolean          not null
-#  smoking         :boolean          not null
-#  square_feet     :integer          not null
-#  title           :string
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  manager_id      :bigint           not null
+#  id           :bigint           not null, primary key
+#  baths        :integer          not null
+#  beds         :integer          not null
+#  description  :text             not null
+#  nightly_rate :decimal(10, 2)   not null
+#  pets         :boolean          not null
+#  smoking      :boolean          not null
+#  square_feet  :integer          not null
+#  title        :string
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  manager_id   :bigint           not null
 #
 # Indexes
 #
@@ -35,6 +34,8 @@ class Property < ApplicationRecord
 
   has_one :address, class_name: :Address, foreign_key: "property_id", dependent: :destroy  # ? is this appropriate here?
 
+  has_many_attached :images
+
   def is_available?(startDate, endDate)
     # returns true if property has no conflicting bookings,
     # else, false
@@ -42,6 +43,11 @@ class Property < ApplicationRecord
       .map { |booking| booking.collides?(startDate, endDate) }
       .none? { |bookingBool| bookingBool }
     return ret;
+  end
+
+  def image_urls
+    # returns an array of urls
+    return self.images.reverse.map { |img| img.representation({}).processed.url }
   end
   
 end

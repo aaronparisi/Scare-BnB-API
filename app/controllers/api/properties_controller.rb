@@ -20,6 +20,12 @@ class Api::PropertiesController < ApplicationController
   def create
     @property = Property.new(property_params)
     if @property.save
+      if params[:propety][:images]
+        params[:property][:images].each do |img|
+          @property.images.attach(img)
+        end
+      end
+      
       render :show
     else
       render json: @property.errors.full_messages, status: 401
@@ -28,6 +34,12 @@ class Api::PropertiesController < ApplicationController
 
   def update
     if @property.update_attributes(property_params)
+      if params[:propety][:images]
+        params[:property][:images].each do |img|
+          @property.images.attach(img)
+        end
+      end
+
       render :show
     else
       render json: @property.errors.full_messages, status: 401
@@ -47,7 +59,7 @@ class Api::PropertiesController < ApplicationController
   end
   
   def property_params
-    params.require(:property).permit(:title, :baths, :beds, :description, :nightly_rate, :pets, :smoking, :square_feet, :manager_id, :image_directory)
+    params.require(:property).permit(:title, :baths, :beds, :description, :nightly_rate, :pets, :smoking, :square_feet, :manager_id, :images => [])
   end
   
 end

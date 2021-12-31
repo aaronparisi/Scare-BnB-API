@@ -57,29 +57,28 @@ characters = [
 
 numLocations = 10
 
-# until locations.length == numLocations do
-#   locations.push Faker::TvShows::Simpsons.location
-#   locations = locations.uniq
-# end
+$imagesDir = Rails.root.join('storage', 'BucketSeeders', 'DevSeeder')
 
-# until characters.length == numLocations * 2 do
-#   characters.push Faker::TvShows::Simpsons.character.split(' ').join('_')
-#   characters = characters.uniq
-# end
-
-# first 10 characters are managers aka hosts
-for i in (0..numLocations-1) do
-  managerName = characters[i]
-  locationName = locations[i]
-
-  aManager = User.create(
-    username: managerName, 
-    email: "#{managerName}@springfieldbnb.com", 
-    password: 'password', 
-    ##image_url: `users/${this.props.user.id-1}/avatar`
-    image_url: "users/#{managerName}/avatar.png"
+def createNewUser(username)
+  aUser = User.create(
+    username: username,
+    email: "#{username}@springfieldbnb.com", 
+    password: 'password'
   )
 
+  toOpen = File.join(Rails.root, 'storage', 'BucketSeeders', 'DevSeeder', 'users', username, 'avatar.png')
+  aUser.avatar.attach(
+    io: File.open(toOpen),
+    filename: 'avatar.png',
+    content_type: 'image/png'
+  )
+
+  aUser.save!  ## not sure if this is necessary...
+
+  return aUser
+end
+
+def createNewProperty(locationName, aManager)  ## do I want to pass the entire manager obj?
   aProperty = Property.create(
     beds: rand(1...5), 
     baths: rand(1...4), 
@@ -89,24 +88,61 @@ for i in (0..numLocations-1) do
     nightly_rate: rand(25...5000), 
     description: Faker::TvShows::Simpsons.quote, 
     title: locationName, 
-    manager_id: aManager.id,
-    image_directory: "/users/#{managerName}/properties/#{locationName}/"
+    manager_id: aManager.id
   )
+
+  toIterate = File.join(Rails.root, 'storage', 'BucketSeeders', 'DevSeeder', 'users', aManager.username, 'properties', aProperty.title)
+  Dir.foreach(toIterate) do |filename|
+    next if filename == '.' or filename == '..'
+    
+    toOpen = File.join(Rails.root, 'storage', 'BucketSeeders', 'DevSeeder', 'users', aManager.username, 'properties', aProperty.title, filename)
+    aProperty.images.attach(
+      io: File.open(toOpen), 
+      filename: filename, 
+      content_type: 'image/png'
+    )
+  end
+  aProperty.save!
+
   anAddress = Address.create(line_1: Faker::Address.street_address, line_2: Faker::Address.secondary_address, city: 'Springfield', state: 'North Takoma', zip: 192005, property_id: aProperty.id)
+
+  return aProperty
 end
 
+def createNewBooking(aGuest, daysInAdvance, propId)
+  startDate = DateTime.now.advance({ days: daysInAdvance }).change({ hour: 16 })
+  endDate = startDate.advance({ days: 3 })
+  aBooking = Booking.create(start_date: startDate, end_date: endDate, guest_id: aGuest.id, property_id: propId)
+
+  return aBooking
+end
+
+# empty aws bucket
+User.all.each do |user|
+  user.avatar.purge
+end
+
+Property.all.each do |property|
+  property.images.purge
+end
+
+# first 10 characters are managers aka hosts
+for i in (0..numLocations-1) do
+  managerName = characters[i]
+  locationName = locations[i]
+
+  aManager = createNewUser(managerName)
+
+  aProperty = createNewProperty(locationName, aManager)
+end
+
+## remainder of the guests will have 2 bookings
 for i in (0..numLocations-1) do
   guestName = characters[i+numLocations]
-  aGuest = User.create(username: guestName, email: "#{guestName}@springfieldbnb.com", password: 'password', image_url: "users/#{guestName}/avatar.png")
-
-  # startDate1 = Date.today + 7
-  startDate1 = DateTime.now.advance({ days: 7 }).change({ hour: 16 })
-  endDate1 = startDate1.advance({ days: 3 })
+  aGuest = createNewUser(guestName)
   propId1 = i % (numLocations) + 1
-  booking1 = Booking.create(start_date: startDate1, end_date: endDate1, guest_id: aGuest.id, property_id: propId1)
-
-  startDate2 = DateTime.now.advance({ days: 14 }).change({ hour: 16 })
-  endDate2 = startDate2.advance({ days: 3 })
   propId2 = (i+1) % (numLocations) + 1
-  booking2 = Booking.create(start_date: startDate2, end_date: endDate2, guest_id: aGuest.id, property_id: propId2)
+
+  booking1 = createNewBooking(aGuest, 7, propId1)
+  booking1 = createNewBooking(aGuest, 14, propId2)
 end

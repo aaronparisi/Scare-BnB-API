@@ -38,7 +38,7 @@ Rails.application.routes.draw do
 
     resources :addresses, only: [:create]
 
-    #get 'presigned-url', to: 'presignedUrls#getNewPresignedUrl'
+    get 'presigned-url', to: 'aws_urls#generatePresignedUrl'
   end
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   match '*path', via: [:options], to: lambda {|_| [204, { 'Content-Type' => 'text/plain' }]}

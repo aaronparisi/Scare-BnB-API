@@ -8,7 +8,7 @@ json.pets property.pets
 json.smoking property.smoking
 json.square_feet property.square_feet
 json.manager_id property.manager_id
-json.image_directory property.image_directory
+json.image_urls property.image_urls
 
 if property.address
   json.address do
