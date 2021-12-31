@@ -19,7 +19,7 @@
 !/tmp/pids/.keep
 
 # Ignore uploaded files in development.
-/storage/*
+#/storage/*  ## uploading this because 1. it's not that big and 2. I didn't figure out another way to access the files in production yet
 !/storage/.keep
 .byebug_history
 
