@@ -38,8 +38,6 @@ class Api::UsersController < ApplicationController
     @user = User.new(user_params)
     if @user.save
       @user.avatar.attach(params[:user][:avatar]) if params[:user][:avatar]
-      login!(@user)
-
       render :show
     else
       render json: @user.errors.full_messages, status: 401
@@ -49,7 +47,6 @@ class Api::UsersController < ApplicationController
   def update
     if @user && @user.update_attributes(user_params)
       @user.avatar.attach(params[:user][:avatar]) if params[:user][:avatar]
-
       render :show
     elsif !@user
       render json: ['Could not locate user'], status: 400

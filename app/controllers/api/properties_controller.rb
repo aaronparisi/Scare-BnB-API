@@ -18,12 +18,11 @@ class Api::PropertiesController < ApplicationController
   end
   
   def create
+    byebug
     @property = Property.new(property_params)
     if @property.save
       if params[:propety][:images]
-        params[:property][:images].each do |img|
-          @property.images.attach(img)
-        end
+        @property.images.attach(params[:property][:images])
       end
       
       render :show
@@ -35,9 +34,7 @@ class Api::PropertiesController < ApplicationController
   def update
     if @property.update_attributes(property_params)
       if params[:propety][:images]
-        params[:property][:images].each do |img|
-          @property.images.attach(img)
-        end
+        @property.images.attach(params[:property][:images])
       end
 
       render :show
@@ -59,7 +56,20 @@ class Api::PropertiesController < ApplicationController
   end
   
   def property_params
-    params.require(:property).permit(:title, :baths, :beds, :description, :nightly_rate, :pets, :smoking, :square_feet, :manager_id, :images => [])
+    params
+      .require(:property)
+      .permit(
+        :title, 
+        :baths, 
+        :beds, 
+        :description, 
+        :nightly_rate, 
+        :pets, 
+        :smoking, 
+        :square_feet, 
+        :manager_id, 
+        images: [{}]
+      )
   end
   
 end

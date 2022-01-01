@@ -27,7 +27,12 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :properties, only: [:index, :show, :create, :update, :destroy] do
+    resources :properties, only: [:index, :show, :destroy] do
+      collection do
+        post '/', to: 'properties#create', format: :multipart
+        put '/', to: 'properties#update', format: :form
+      end
+
       member do
         get 'bookings', to: 'bookings#index'
       end
