@@ -18,13 +18,20 @@ class Api::PropertiesController < ApplicationController
   end
   
   def create
-    byebug
     @property = Property.new(property_params)
+
     if @property.save
-      if params[:propety][:images]
-        @property.images.attach(params[:property][:images])
+      if params[:property][:images]
+        begin
+          params[:property][:images].each do |img|
+            @property.images.attach(img)
+          end
+        rescue => exception
+          @property.destroy
+          render json: @property.errors.full_messages, status: 401 and return
+        end
       end
-      
+
       render :show
     else
       render json: @property.errors.full_messages, status: 401
@@ -33,8 +40,14 @@ class Api::PropertiesController < ApplicationController
 
   def update
     if @property.update_attributes(property_params)
-      if params[:propety][:images]
-        @property.images.attach(params[:property][:images])
+      if params[:property][:images]
+        begin
+          params[:property][:images].each do |img|
+            @property.images.attach(img)
+          end
+        rescue => exception
+          puts exception
+        end
       end
 
       render :show

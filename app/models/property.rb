@@ -24,6 +24,8 @@
 #  fk_rails_...  (manager_id => users.id)
 #
 class Property < ApplicationRecord
+  include Rails.application.routes.url_helpers
+
   validates :baths, :beds, :description, :nightly_rate, :square_feet, :title, presence: true
   validates :pets, :smoking, inclusion: { in: [true, false] }
 
@@ -47,7 +49,7 @@ class Property < ApplicationRecord
 
   def image_urls
     # returns an array of urls
-    return self.images.reverse.map { |img| img.representation({}).processed.url }
+    return self.images.reverse.map { |img| url_for(img) }
   end
   
 end

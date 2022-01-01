@@ -11,6 +11,8 @@
 #  updated_at      :datetime         not null
 #
 class User < ApplicationRecord
+  include Rails.application.routes.url_helpers
+
   has_secure_password
 
   validates :username, :email, presence: true, uniqueness: true
@@ -86,6 +88,6 @@ class User < ApplicationRecord
   end
 
   def avatar_url
-    return self.avatar.representation({}).processed.url
+    return url_for(self.avatar)
   end
 end

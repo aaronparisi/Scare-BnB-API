@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   namespace :api, defaults: { format: :json } do
+  # namespace :api do
     resources :users, only: [:show, :create, :update, :destroy] do
       
       collection do
@@ -29,8 +30,10 @@ Rails.application.routes.draw do
 
     resources :properties, only: [:index, :show, :destroy] do
       collection do
-        post '/', to: 'properties#create', format: :multipart
-        put '/', to: 'properties#update', format: :form
+        # post '/', to: 'properties#create', constraints: lambda { |req| req.format == 'multipart/form-data' }
+        # put '/', to: 'properties#update', constraints: lambda { |req| req.format == 'multipart/form-data' }
+        post '/', to: 'properties#create'
+        put '/', to: 'properties#update'
       end
 
       member do
