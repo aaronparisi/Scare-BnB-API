@@ -2,12 +2,15 @@
 class ApplicationController < ActionController::Base
   include ActionController::ImplicitRender
   include ActionView::Layouts
+  include ActionController::Cookies
 
   # This will be on the assessment
   protect_from_forgery with: :exception
 
   # make these methods available from within the views
   helper_method :current_user, :logged_in?
+
+  after_action :set_csrf_cookie
 
   def login!(user)
     # set the session_token for the connection to be the 
@@ -44,5 +47,37 @@ class ApplicationController < ActionController::Base
   def require_logged_in
     # Prevent logged-out users from seeing certain pages
     redirect_to new_session_url unless logged_in?
+  end
+
+  protected
+
+  def verified_request?
+    csrfCookie = request
+      .headers['HTTP_COOKIE']
+      .split("; ")
+      .select { |cookie| cookie.include?("X-CSRF-Token") }[0]
+      .slice(/(?<=X-CSRF-Token=).*/)
+      .gsub("%3D", "=")
+    super ||
+    # jwt === cookies[]
+    csrfCookie === cookies['X-CSRF-Token']
+    # request.headers['fake-token'] === cookies['fake-token']
+  end
+  ## not sure if this is necessary...
+  ## I believe it is useful if the frontend passes the token to the backend
+  ## with a different header, e.g. 'X-XSRF-TOKEN'
+
+  def set_csrf_cookie
+    if protect_against_forgery? && current_user
+      # cookies['X-CSRF-Token'] = {
+      #   value: form_authenticity_token,
+      #   httponly: false
+      #   # same_site: strict,
+      #   # domain: 'localhost:8080'
+      # }
+      cookies['X-CSRF-Token'] = {value: form_authenticity_token, httponly: true}
+      # created_jwt = issue_token({id: current_user.id})
+      # cookies.signed[:jwt] = {value: created_jwt, httponly: true}
+    end
   end
 end

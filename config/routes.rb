@@ -14,7 +14,8 @@ Rails.application.routes.draw do
         get 'guest', to: 'users#guest'
         get 'bookings', to: 'bookings#index'
         get 'managed-bookings', to: 'bookings#managedIndex'
-        put 'update-image-url', to: 'users#updateImageUrl'
+        put 'destroy-avatar', to: 'users#destroyAvatar'
+        put 'add-avatar', to: 'users#addAvatar'
       end
     end
 
@@ -28,12 +29,11 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :properties, only: [:index, :show, :destroy] do
+    resources :properties, only: [:index, :show, :destroy, :create, :update] do
       collection do
-        # post '/', to: 'properties#create', constraints: lambda { |req| req.format == 'multipart/form-data' }
-        # put '/', to: 'properties#update', constraints: lambda { |req| req.format == 'multipart/form-data' }
-        post '/', to: 'properties#create'
-        put '/', to: 'properties#update'
+        # post '/', to: 'properties#create'
+        # put '/', to: 'properties#update'
+        # I don't think this is necessary anymore to ensure form data transmission
       end
 
       member do

@@ -88,6 +88,6 @@ class User < ApplicationRecord
   end
 
   def avatar_url
-    return url_for(self.avatar)
+    self.avatar.attached? ? url_for(self.avatar) : nil
   end
 end

@@ -1,5 +1,5 @@
 class Api::UsersController < ApplicationController
-  before_action :selected_user, only: [:guest, :manager, :update, :destroy]
+  before_action :selected_user, only: [:guest, :manager, :update, :destroy, :addAvatar, :destroyAvatar]
   skip_before_action :verify_authenticity_token, only: [:create, :update, :destroy]
   
   def loggedInUser
@@ -9,6 +9,25 @@ class Api::UsersController < ApplicationController
       render :show
     else
       render json: ""
+    end
+  end
+
+  def addAvatar
+    if @user.avatar.attached?
+      ## some kind of message to frontend?
+    else
+      @user.avatar.attach(params[:user][:avatar])
+      @user.save!
+
+      render :show
+    end
+  end
+
+  def destroyAvatar
+    if @user.avatar.purge
+      ## what would I even return here?
+      ## probably just render the updated user json?
+      render :show
     end
   end
 
