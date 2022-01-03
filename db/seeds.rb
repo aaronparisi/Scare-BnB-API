@@ -92,7 +92,7 @@ def createNewProperty(locationName, aManager)  ## do I want to pass the entire m
   )
 
   toIterate = File.join(Rails.root, 'storage', 'BucketSeeders', 'DevSeeder', 'users', aManager.username, 'properties', aProperty.title)
-  Dir.foreach(toIterate) do |filename|
+  Dir.each_child(toIterate) do |filename|
     next if filename == '.' or filename == '..'
     
     toOpen = File.join(Rails.root, 'storage', 'BucketSeeders', 'DevSeeder', 'users', aManager.username, 'properties', aProperty.title, filename)

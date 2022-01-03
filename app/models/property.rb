@@ -49,7 +49,7 @@ class Property < ApplicationRecord
 
   def image_urls
     # returns an array of urls
-    return self.images.reverse.map { |img| url_for(img) }
+    return self.images.map { |img| url_for(img) }
   end
   
 end
