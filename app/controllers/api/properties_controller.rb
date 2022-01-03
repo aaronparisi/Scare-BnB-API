@@ -26,6 +26,7 @@ class Api::PropertiesController < ApplicationController
           params[:property][:images].each do |img|
             @property.images.attach(img)
           end
+          @property.save!
         rescue => exception
           @property.destroy
           render json: @property.errors.full_messages, status: 401 and return
@@ -45,6 +46,7 @@ class Api::PropertiesController < ApplicationController
           params[:property][:images].each do |img|
             @property.images.attach(img)
           end
+          @property.save!
         rescue => exception
           puts exception
         end
@@ -64,17 +66,19 @@ class Api::PropertiesController < ApplicationController
     ## send back image urls for updated images only
     @toRender = @property
       .images[(0-params[:property][:images].length)..-1]
-      .map { |img| img.image_url }
-    render json: { propId: paramd[:property][:id], images: @toRender }
+      .map { |img| @property.image_url(img) }
+
+    render json: { propId: @property.id, images: @toRender }
   end
 
   def destroyImage
     ## make sure to return the id of the destroyed image
     ## so the frontend can delete it from redux
     ## this param structure may not be permitted per property_params...
-    @image = ActiveStorage::Blob.find_signed(params[:imageId])
-    # @image = @property.images.find(params[:imageId])
-    @image.purge_later
+    @blob = ActiveStorage::Blob.find_signed(params[:imageId])
+    @image = @property.images.find_by(blob_id: @blob.id)
+
+    @image.purge_later if @image.persisted?
     render json: { deletedImageId: params[:imageId] }
   end
 
