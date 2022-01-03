@@ -1,5 +1,5 @@
 class Api::PropertiesController < ApplicationController
-  before_action :find_property, only: [:update, :destroy]
+  before_action :find_property, only: [:update, :destroy, :destroyImage, :addImage]
   skip_before_action :verify_authenticity_token, only: [:create, :destroy]
 
   def index
@@ -54,6 +54,28 @@ class Api::PropertiesController < ApplicationController
     else
       render json: @property.errors.full_messages, status: 401
     end
+  end
+
+  def addImage
+    params[:property][:images].each do |img|
+      @property.images.attach(img)
+    end
+
+    ## send back image urls for updated images only
+    @toRender = @property
+      .images[(0-params[:property][:images].length)..-1]
+      .map { |img| img.image_url }
+    render json: { propId: paramd[:property][:id], images: @toRender }
+  end
+
+  def destroyImage
+    ## make sure to return the id of the destroyed image
+    ## so the frontend can delete it from redux
+    ## this param structure may not be permitted per property_params...
+    @image = ActiveStorage::Blob.find_signed(params[:imageId])
+    # @image = @property.images.find(params[:imageId])
+    @image.purge_later
+    render json: { deletedImageId: params[:imageId] }
   end
 
   def destroy

@@ -47,9 +47,23 @@ class Property < ApplicationRecord
     return ret;
   end
 
+  def image_url(img)
+    return {
+      url: url_for(img),
+      id: img.signed_id
+    }
+  end
+
   def image_urls
-    # returns an array of urls
-    return self.images.map { |img| url_for(img) }
+    # returns an array of objects consisting of the images url and the signed id
+    ret = self.images.map do |img|
+      {
+        url: url_for(img),
+        id: img.signed_id
+      }
+    end
+
+    return ret
   end
   
 end

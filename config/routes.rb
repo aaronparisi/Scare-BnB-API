@@ -35,9 +35,11 @@ Rails.application.routes.draw do
         # put '/', to: 'properties#update'
         # I don't think this is necessary anymore to ensure form data transmission
       end
-
+      
       member do
         get 'bookings', to: 'bookings#index'
+        put 'destroy-image/:imageId', to: 'properties#destroyImage'
+        put 'add-image', to: 'properties#addImage'
       end
     end
     resources :bookings, only: [:show, :create, :update, :destroy]

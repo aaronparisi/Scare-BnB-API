@@ -52,32 +52,22 @@ class ApplicationController < ActionController::Base
   protected
 
   def verified_request?
+    ## parse the request headers for the csrf token axios included in the request
     csrfCookie = request
       .headers['HTTP_COOKIE']
       .split("; ")
       .select { |cookie| cookie.include?("X-CSRF-Token") }[0]
       .slice(/(?<=X-CSRF-Token=).*/)
       .gsub("%3D", "=")
+
     super ||
-    # jwt === cookies[]
     csrfCookie === cookies['X-CSRF-Token']
-    # request.headers['fake-token'] === cookies['fake-token']
   end
-  ## not sure if this is necessary...
-  ## I believe it is useful if the frontend passes the token to the backend
-  ## with a different header, e.g. 'X-XSRF-TOKEN'
 
   def set_csrf_cookie
     if protect_against_forgery? && current_user
-      # cookies['X-CSRF-Token'] = {
-      #   value: form_authenticity_token,
-      #   httponly: false
-      #   # same_site: strict,
-      #   # domain: 'localhost:8080'
-      # }
+
       cookies['X-CSRF-Token'] = {value: form_authenticity_token, httponly: true}
-      # created_jwt = issue_token({id: current_user.id})
-      # cookies.signed[:jwt] = {value: created_jwt, httponly: true}
     end
   end
 end
