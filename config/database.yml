@@ -84,4 +84,5 @@ production:
   <<: *default
   database: springfieldBnBAPI_production
   username: springfieldBnBAPI
+  # username: aaronparisi
   password: <%= ENV['springfieldBnBAPI_DATABASE_PASSWORD'] %>

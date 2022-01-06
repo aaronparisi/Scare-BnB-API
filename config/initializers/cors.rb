@@ -1,5 +1,6 @@
 # Rails.application.config.middleware.insert_before 0, Rack::Cors do
-Rails.application.config.middleware.insert_before ActionDispatch::Static, Rack::Cors do
+# Rails.application.config.middleware.insert_before ActionDispatch::Static, Rack::Cors do
+Rails.application.config.middleware.insert_before Rack::Runtime, Rack::Cors do
   allow do
     origins 'http://localhost:8080', 
       'http://localhost:5000',
