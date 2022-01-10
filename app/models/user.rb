@@ -48,6 +48,8 @@ class User < ApplicationRecord
 
   has_one_attached :avatar
 
+  before_destroy :purge_avatar
+
   def guest_rating
     return self.received_guest_ratings.average(:rating) || 0
   end
@@ -89,5 +91,10 @@ class User < ApplicationRecord
 
   def avatar_url
     self.avatar.attached? ? url_for(self.avatar) : nil
+  end
+
+  def purge_avatar
+    puts "deleting avatar for #{self.username}"
+    self.avatar.purge_later
   end
 end

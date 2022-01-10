@@ -38,6 +38,8 @@ class Property < ApplicationRecord
 
   has_many_attached :images
 
+  before_destroy :purge_images
+
   def is_available?(startDate, endDate)
     # returns true if property has no conflicting bookings,
     # else, false
@@ -49,6 +51,7 @@ class Property < ApplicationRecord
 
   def image_url(img)
     return {
+      # url: Rails.application.routes.url_helpers.rails_blob_path(img, only_path: true),
       url: url_for(img),
       id: img.signed_id
     }
@@ -56,14 +59,13 @@ class Property < ApplicationRecord
 
   def image_urls
     # returns an array of objects consisting of the images url and the signed id
-    ret = self.images.map do |img|
-      {
-        url: url_for(img),
-        id: img.signed_id
-      }
-    end
+    ret = self.images.map { |img| self.image_url(img) }
+  end
 
-    return ret
+  def purge_images
+    # puts "deleting #{self.images.count} #{ActionController::Base.helpers.pluralize(self.images.count, "image")} for #{self.title}"
+    puts "deleting images for #{self.title}"
+    self.images.purge_later
   end
   
 end

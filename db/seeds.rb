@@ -19,6 +19,11 @@ Address.destroy_all
 Property.destroy_all
 User.destroy_all
 
+ActiveRecord::Base.connection.reset_pk_sequence!('users')
+ActiveRecord::Base.connection.reset_pk_sequence!('properties')
+ActiveRecord::Base.connection.reset_pk_sequence!('addresses')
+ActiveRecord::Base.connection.reset_pk_sequence!('bookings')
+
 locations = [
   "Simpson_House",
   "Kwik-e-Mart",
@@ -67,6 +72,7 @@ def createNewUser(username)
   )
 
   toOpen = File.join(Rails.root, 'storage', 'BucketSeeders', 'DevSeeder', 'users', username, 'avatar.png')
+  puts toOpen
   aUser.avatar.attach(
     io: File.open(toOpen),
     filename: 'avatar.png',
@@ -96,6 +102,7 @@ def createNewProperty(locationName, aManager)  ## do I want to pass the entire m
     next if filename == '.' or filename == '..'
     
     toOpen = File.join(Rails.root, 'storage', 'BucketSeeders', 'DevSeeder', 'users', aManager.username, 'properties', aProperty.title, filename)
+    puts toOpen
     aProperty.images.attach(
       io: File.open(toOpen), 
       filename: filename, 
@@ -117,14 +124,14 @@ def createNewBooking(aGuest, daysInAdvance, propId)
   return aBooking
 end
 
-# empty aws bucket
-User.all.each do |user|
-  user.avatar.purge
-end
+# empty aws bucket  ## note I now handle this in before_destroy in models
+# User.all.each do |user|
+#   user.avatar.purge
+# end
 
-Property.all.each do |property|
-  property.images.purge
-end
+# Property.all.each do |property|
+#   property.images.purge
+# end
 
 # first 10 characters are managers aka hosts
 for i in (0..numLocations-1) do

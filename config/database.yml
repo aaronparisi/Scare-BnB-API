@@ -83,6 +83,6 @@ test:
 production:
   <<: *default
   database: springfieldBnBAPI_production
-  username: springfieldBnBAPI
-  # username: aaronparisi
+  # username: springfieldBnBAPI                             ## for heroku
+  username: aaronparisi                                     ## for running prod locally
   password: <%= ENV['springfieldBnBAPI_DATABASE_PASSWORD'] %>
