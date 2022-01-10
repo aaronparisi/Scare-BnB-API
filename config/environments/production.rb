@@ -115,5 +115,6 @@ Rails.application.configure do
 
   Rails.application.routes.default_url_options = {
     host: "https://springfield-bnb.aaronparisidev.com"
+    # host: "http://localhost:3000"
   }
 end
