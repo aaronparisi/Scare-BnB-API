@@ -26,41 +26,42 @@ ActiveRecord::Base.connection.reset_pk_sequence!('bookings')
 
 locations = [
   "Simpson_House",
-  "Kwik-e-Mart",
-  "Springfield_Cemetery",
-  "Springfield_Police_Station",
-  "Krustyland",
-  "Flanders_House",
-  "Springfield_Nuclear_Power_Plant",
-  "The_First_Church_of_Springfield",
-  "Springfield_Elementary_School",
-  "Moes_Tavern"
+  # "Kwik-e-Mart",
+  # "Springfield_Cemetery",
+  # "Springfield_Police_Station",
+  # "Krustyland",
+  # "Flanders_House",
+  # "Springfield_Nuclear_Power_Plant",
+  # "The_First_Church_of_Springfield",
+  # "Springfield_Elementary_School",
+  # "Moes_Tavern"
 ]
 
 characters = [
   "Homer_Simpson",
-  "Apu_Nahasapeemapetilon",
-  "Maggie_Simpson",
-  "Chief_Wiggum",
-  "Krusty_the_Clown",
-  "Ned_Flanders",
-  "Mr_Burns",
-  "Reverend_Lovejoy",
-  "Edna_Krabappel",
-  "Moe_Szyslak",
-  "Baby_Gerald",
-  "Cletus_Spuckler",
-  "Database",
-  "Dewey_Largo",
+  # "Apu_Nahasapeemapetilon",
+  # "Maggie_Simpson",
+  # "Chief_Wiggum",
+  # "Krusty_the_Clown",
+  # "Ned_Flanders",
+  # "Mr_Burns",
+  # "Reverend_Lovejoy",
+  # "Edna_Krabappel",
+  # "Moe_Szyslak",
+  # "Baby_Gerald",
+  # "Cletus_Spuckler",
+  # "Database",
+  # "Dewey_Largo",
   "Frankie_the_Squealer",
-  "Kirk_Van_Houten",
-  "Lindsey_Naegle",
-  "Poor_Violet",
-  "Rod_Flanders",
-  "Superintendent_Gary_Chalmers"
+  # "Kirk_Van_Houten",
+  # "Lindsey_Naegle",
+  # "Poor_Violet",
+  # "Rod_Flanders",
+  # "Superintendent_Gary_Chalmers"
 ]
 
-numLocations = 10
+# numLocations = 10
+numLocations = 1
 
 $imagesDir = Rails.root.join('storage', 'BucketSeeders', 'DevSeeder')
 
