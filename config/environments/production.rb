@@ -114,7 +114,7 @@ Rails.application.configure do
   # config.active_record.database_resolver_context = ActiveRecord::Middleware::DatabaseSelector::Resolver::Session
 
   Rails.application.routes.default_url_options = {
-    host: "https://springfield-bnb.aaronparisidev.com"
+    host: "https://springfield-bnb.aaronparisi.dev"
     # host: "http://localhost:3000"
   }
 end

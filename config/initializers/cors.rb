@@ -6,10 +6,10 @@ Rails.application.config.middleware.insert_before Rack::Runtime, Rack::Cors do
       'https://localhost:8080',
       'http://localhost:5000',
       'https://localhost:5000',
-      'https://springfield-bnb.aaronparisidev.com',
-      'http://springfield-bnb.aaronparisidev.com',
-      'https://www.springfield-bnb.aaronparisidev.com',
-      'http://www.springfield-bnb.aaronparisidev.com'
+      'https://springfield-bnb.aaronparisi.dev',
+      'http://springfield-bnb.aaronparisi.dev',
+      'https://www.springfield-bnb.aaronparisi.dev',
+      'http://www.springfield-bnb.aaronparisi.dev'
 
     resource '*',
       headers: :any,
