@@ -90,7 +90,7 @@ class User < ApplicationRecord
   end
 
   def avatar_url
-    self.avatar.attached? ? url_for(self.avatar) : nil
+    self.avatar.attached? ? {url: url_for(self.avatar), id: self.avatar.signed_id} : nil
   end
 
   def purge_avatar
