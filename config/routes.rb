@@ -48,7 +48,7 @@ Rails.application.routes.draw do
 
     resources :addresses, only: [:create]
 
-    get '/exchange-image-id-for-s3-url/:blobId', to: 'images#exchangeImageIdForS3Url'
+    get '/exchange-image-ids-for-s3-urls', to: 'images#exchangeImageIdForS3Url'
   end
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   match '*path', via: [:options], to: lambda {|_| [204, { 'Content-Type' => 'text/plain' }]}
