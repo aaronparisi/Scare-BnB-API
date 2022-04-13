@@ -52,13 +52,18 @@ class ApplicationController < ActionController::Base
   protected
 
   def verified_request?
+    # byebug
     ## parse the request headers for the csrf token axios included in the request
     csrfCookie = request
       .headers['HTTP_COOKIE']
       .split("; ")
       .select { |cookie| cookie.include?("X-CSRF-Token") }[0]
-      .slice(/(?<=X-CSRF-Token=).*/)
+
+    if csrfCookie
+      csrfCookie = csrfCookie
+        .slice(/(?<=X-CSRF-Token=).*/)
       .gsub("%3D", "=")
+    end
 
     super ||
     csrfCookie === cookies['X-CSRF-Token']
