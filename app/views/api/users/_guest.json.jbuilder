@@ -1,1 +1,0 @@
-json.extract! guest, :id, :username, :email, :guest_rating

@@ -1,1 +1,0 @@
-json.extract! manager, :id, :username, :email, :host_rating, :avatar_url
