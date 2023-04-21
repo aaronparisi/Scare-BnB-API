@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.304.0",
+    "@aws-sdk/s3-request-presigner": "^3.304.0",
     "pg": "^8.10.0"
   },
   "name": "springfield-bnb-api",
@@ -7,12 +9,14 @@
   "description": "API for communicating with frontend and postgresql database",
   "main": "server.js",
   "repository": "git@github.com:aaronparisi/Springfield-BnB-API.git",
-  "devDependencies": {},
   "scripts": {
     "start": "node server.js",
     "watch": "npx nodemon -e js,json,css,html,svg server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@faker-js/faker": "^7.6.0"
+  }
 }
