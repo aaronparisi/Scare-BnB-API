@@ -1,11 +1,12 @@
 const { Pool } = require('pg')
 const crypto = require('crypto')
 const fs = require('fs')
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3")
+const path = require('path')
+const { S3Client, PutObjectCommand, DeleteObjectsCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3")
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner")
 const { faker } = require('@faker-js/faker')
 
-const dotEnv = fs.readFileSync('.env', 'utf8')
+const dotEnv = fs.readFileSync(path.join(__dirname, '.env'), 'utf8')
 dotEnv.split('\n').forEach(line => {
   const [ key, val ] = line.split('=')
   process.env[key] = val
@@ -22,7 +23,7 @@ if (
   return
 }
 
-const pool = new Pool({
+const pgPool = new Pool({
   user: 'aaronparisi',
   host: 'localhost',
   database: `scare-bnb-${process.env.ENV}`,
@@ -30,7 +31,7 @@ const pool = new Pool({
   port: 5432,
 })
 const s3 = new S3Client({
-  region: 'us-west-1',
+  region: 'us-west-2',
   credentials: {
     accessKeyId: process.env.AWS_ACCESS,
     secretAccessKey: process.env.AWS_SECRET,
@@ -56,17 +57,16 @@ const fetchSignedUrl = async (command, exp = 60 * 2) => {
   return presignedUrl
 }
 
-const sanitizeFilename = filename => {
-  const extIdx = filename.lastIndexOf('.')
-  const ext = filename.slice(extensionIndex)
-  const sanitizedFilename = filename
-    .slice(0, extensionIndex)
-    .replace(/[^a-zA-Z0-9]/g, '_')
-
-  return `${sanitizedFilename}${ext}`
-}
 const sanitizeFakerName = fakerName => {
   return fakerName.replace(/[^a-zA-Z0-9._%+-]/g, '')
+}
+const generateRandomPathname = (l = 20) => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < l; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }
 
 const generateUser = () => {
@@ -82,13 +82,14 @@ const generateUser = () => {
 }
 const generateProperty = () => {
   console.log('generating property')
+  debugger
   return {
     title: faker.lorem.words(3),
     description: faker.lorem.lines(3),
     beds: faker.datatype.number({ min: 0, max: 10 }),
     baths: faker.datatype.number({ min: 0, max: 5 }),
     square_feet: faker.datatype.number({ min: 100, max: 1000000 }),
-    nightly_rate: faker.commerce.price({ min: 0, max: 1000000000, dec: 2 }),
+    nightly_rate: faker.commerce.price(0, 10000000, 2),
     smoking: faker.datatype.boolean(),
     pets: faker.datatype.boolean(),
     address: generateAddress()
@@ -114,7 +115,7 @@ const generateValidBooking = async (guestId, propertyId) => {
   }
 
   const bookingOverlaps = await isBookingOverlapping(booking)
-  if (bookingOverlaps) return generateBooking(guestId, propertyId)
+  if (bookingOverlaps) return generateValidBooking(guestId, propertyId)
   else return Promise.resolve(booking)
 }
 
@@ -125,12 +126,9 @@ const hashAndSaltPassword = pw => {
     .toString('hex')
   return {hash, salt}
 }
-const buildStoredFilename = filename => {
-  return `${new Date()}_${sanitizeFilename(filename)}`
-}
 const isBookingOverlapping = async booking => {
   const { property_id, start_date, end_date } = booking
-  const pgClient = await pool.connect()
+  const pgClient = await pgPool.connect()
 
   try {
     const overlaps = await pgClient.query(`
@@ -141,14 +139,11 @@ const isBookingOverlapping = async booking => {
         AND end_date > $3
     `, [property_id, end_date, start_date])
 
-    console.log(overlaps.rows)
-    console.log(`booking for prop ${property_id} is overlapping: ${overlaps.rows[0].count > 0}`)
     return overlaps.rows[0].count > 0
   } catch (err) {
-    debugger
     throw err
   } finally {
-    console.log('releasing pgClient')
+    console.log('finished booking overlap check; releasing pgClient')
     pgClient.release();
   }
 }
@@ -163,8 +158,8 @@ const shuffleArray = array => {
 
 const deleteTables = async () => {
   console.log('inside deleteTables')
-  const pgClient = await pool.connect()
-  console.log('pool connection established')
+  const pgClient = await pgPool.connect()
+  console.log('pgPool connection established')
 
   try {
     await pgClient.query('BEGIN')
@@ -191,14 +186,14 @@ const deleteTables = async () => {
     console.log('rolling back due to error in deleteTables: ', err)
     throw err
   } finally {
-    console.log('releasing pgClient')
+    console.log('finished deleting tabbles; releasing pgClient')
     pgClient.release()
   }
 }
 const buildTables = async () => {
   console.log('inside buildTables')
-  const pgClient = await pool.connect()
-  console.log('pool connection established')
+  const pgClient = await pgPool.connect()
+  console.log('pgPool connection established')
 
   try {
     await pgClient.query('BEGIN')
@@ -211,7 +206,7 @@ const buildTables = async () => {
         email VARCHAR(255) UNIQUE NOT NULL CHECK (email ~* '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'),
         password_hash TEXT NOT NULL,
         password_salt TEXT NOT NULL,
-        avatar_id VARCHAR(255) UNIQUE,
+        image_pathname VARCHAR(255) UNIQUE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
       );
@@ -276,7 +271,10 @@ const buildTables = async () => {
           AND end_date >= NEW.start_date
           AND id != NEW.id
         ) THEN
-          RAISE EXCEPTION 'Booking overlaps with existing booking';
+          RAISE EXCEPTION 'Existing booking for property "%" conflicts with start_date: %, end_date: %',
+            (SELECT title FROM properties WHERE id = NEW.property_id),
+            NEW.start_date,
+            NEW.end_date;
         END IF;
         RETURN NEW;
       END;
@@ -295,62 +293,42 @@ const buildTables = async () => {
     await pgClient.query(`
       CREATE TABLE IF NOT EXISTS "property-images" (
         id SERIAL PRIMARY KEY,
-        image_id VARCHAR(255) UNIQUE,
+        image_pathname VARCHAR(255) UNIQUE,
         property_id INTEGER NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
       );
     `)
 
-    console.log('attempting COMMIT')
     await pgClient.query('COMMIT')
-    console.log('COMMIT successful')
+    console.log('table creation COMMIT successful')
   } catch (err) {
     await pgClient.query('ROLLBACK')
     console.log('rolling back due to error in buildTables: ', err)
     throw err
   } finally {
-    console.log('releasing pgClient')
+    console.log('table creation completed; releasing client')
     pgClient.release();
   }
 }
-const seedSeeds = (numUsers, numPropsPerUser) => {
-  console.log(`seeding seeds: ${numUsers} users, each with ${numPropsPerUser} properties`)
-  for (let i = 0; i < numUsers; i++) {
-    const user = generateUser()
-    for (let j = 0; j < numPropsPerUser; j++) {
-      user.properties.push(generateProperty())
-    }
-    SEEDS.users.push(user)
-  }
-}
-const seedBucket = () => {
-  // query for all users usernames
-  // for each username, find the file in /seed_images/users/<username>/ directory
-  // upload to aws with key `${new Date()}_${username}_avatar.${ext}`
-  // save same path to database for that user
-
-  // query for all properties
-  // for each property title, find directory /seed_images/properties/<propTitle>/
-  // for each file in that directory:
-    // upload to aws with key `${new Date()}_${property_title}_${i}.${ext}`
-    // loop via index, sanitize property title
-}
 const seedTables = async () => {
   console.log('seeding tables')
-  const pgClient = await pool.connect()
-  let shouldSeedBucket = true
+  const pgClient = await pgPool.connect()
 
   try {
-    console.log('attempting to seed users and properties')
+    console.log('attempting to seed users')
     const userPromises = []
     const propertyPromises = []
-    SEEDS.users.forEach(user => {
+    const bookingPromises = []
+    const userImagePromises = []
+    const propertyImagePromises = []
+    for (let i = 0; i < 5; i++) {
+      const user = generateUser()
       console.log('seeding user: ', user.username)
       const { hash, salt } = hashAndSaltPassword(user.password)
       const prom = pgClient.query(`
         INSERT INTO users (id, username, email, password_hash, password_salt) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING id;
-      `, [
+        `, [
         user.username,
         user.email,
         hash,
@@ -358,26 +336,29 @@ const seedTables = async () => {
       ])
         .then(row => row.rows[0].id)
       userPromises.push(prom)
-    })
+    }
 
     Promise.all(userPromises)
       .then(userIds => {
-        userIds.forEach((userId, idx) => {
-          SEEDS.users[idx].properties.forEach(prop => {
+        console.log('attempting to seed properties')
+        userIds.slice(0, 3).forEach(userId => {
+          for (let j = 0; j < 1; j++) {  // loop is silly now but potenaial to have multiple props per user
+            const prop = generateProperty()
             console.log('seeding property: ', prop.title)
-            const prom = pgClient.query(`
-              INSERT INTO properties (id, title, description, beds, baths, square_feet, nightly_rate, smoking, pets, manager_id) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;
-            `, [
-              prop.title,
-              prop.description,
-              prop.beds,
-              prop.baths,
-              prop.square_feet,
-              prop.nightly_rate,
-              prop.smoking,
-              prop.pets,
-              userId
-            ])
+            const prom = pgClient.query(
+              `INSERT INTO properties (id, title, description, beds, baths, square_feet, nightly_rate, smoking, pets, manager_id) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;`,
+              [
+                prop.title,
+                prop.description,
+                prop.beds,
+                prop.baths,
+                prop.square_feet,
+                prop.nightly_rate,
+                prop.smoking,
+                prop.pets,
+                userId
+              ]
+            )
               .then(row => row.rows[0].id)
             propertyPromises.push(prom)
 
@@ -385,62 +366,154 @@ const seedTables = async () => {
               const addr = prop.address
               console.log('seeding address: ', addr.line_1)
               if (addr) {
-                pgClient.query(`
-                  INSERT INTO addresses (id, line_1, line_2, city, state, zip_code, property_id) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6);
-                  `, [
+                pgClient.query(
+                  `INSERT INTO addresses (id, line_1, line_2, city, state, zip_code, property_id) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6);`,
+                  [
                     addr.line_1,
                     addr.line_2,
                     addr.city,
                     addr.state,
                     addr.zip_code,
                     propId
-                  ])}
+                  ]
+                )
+              }
             })
-          })
+          }
         })
 
         return Promise.all([
-          Promise.all(userPromises),
+          Promise.resolve(userIds),
           Promise.all(propertyPromises)
         ])
       })
       .then(([userIds, propertyIds]) => {
         console.log('attempting to seed bookings')
-        userIds.forEach(async userId => {
-          for (let i = 0; i < 2; i ++ ) {
+        userIds.slice(3, 5).forEach(userId => {
+          for (let j = 0; j < 2; j++ ) {  // 2 bookings per guest
             const propId = propertyIds[Math.floor(Math.random() * propertyIds.length)]
-            let booking = await generateValidBooking(userId, propId)
-            console.log(booking.property_id, booking.start_date, booking.end_date)
-            pgClient.query(`
-              INSERT INTO bookings (id, start_date, end_date, guest_id, property_id) VALUES (DEFAULT, $1, $2, $3, $4);
-            `, [
-              booking.start_date,
-              booking.end_date,
-              userId,
-              propId
-            ])
+            const prom = generateValidBooking(userId, propId)
+              .then(booking => {
+                pgClient.query(
+                  `INSERT INTO bookings (id, start_date, end_date, guest_id, property_id) VALUES (DEFAULT, $1, $2, $3, $4);`,
+                  [
+                    booking.start_date,
+                    booking.end_date,
+                    userId,
+                    propId
+                  ]
+                )
+              })
+            bookingPromises.push(prom)
           }
         })
-        console.log('finished seeding users, properties, addresses, and bookings')
+
+        return Promise.all([
+          Promise.resolve(userIds),
+          Promise.resolve(propertyIds),
+          Promise.all(bookingPromises)
+        ])
+      })
+      .then(([userIds, propertyIds, _]) => {
+        console.log('finished seeding bookings')
+
+        const userImagePaths = fs.readdirSync(path.join(__dirname, 'images', 'users'), 'utf8')
+          .filter(f => fs.statSync(path.join(__dirname, 'images', 'users', f)).isFile() && !f.startsWith('.'))
+        const propertyImagePaths = fs.readdirSync(path.join(__dirname, 'images', 'properties'), 'utf8')
+          .filter(f => fs.statSync(path.join(__dirname, 'images', 'properties', f)).isFile() && !f.startsWith('.'))
+        if (userIds.length > userImagePaths.length) throw new Error(`Too few user images.  users: ${userIds.length}; user images: ${userImagePaths.length}`)
+        if (propertyIds.length > propertyImagePaths.length) throw new Error(`Too few property images.  properties: ${propertyIds.length}; property images: ${propertyImagePaths.length}`)
+
+        console.log('seeding user image ids in users table')
+        userIds.forEach((userId, idx) => {
+          const imagePath = userImagePaths[idx]
+          const imageData = fs.readFileSync(path.join(__dirname, 'images', 'users', imagePath))
+          const awsImagePath = new Date().toISOString() + '_' + generateRandomPathname() + path.extname(imagePath)
+          const prom = pgClient.query(
+            `UPDATE users SET image_pathname = $1 WHERE id = $2;`,
+            [
+              awsImagePath,
+              userId
+            ]
+          )
+            .then(() => {
+              return {
+                imageData,
+                awsImagePath
+              }
+            })
+          userImagePromises.push(prom)
+        })
+
+        console.log('seeding property images table')
+        propertyIds.forEach((propertyId, idx) => {
+          for (let i = 0; i < 3; i++) {
+            const imagePath = propertyImagePaths[idx]
+            const imageData = fs.readFileSync(path.join(__dirname, 'images', 'properties', imagePath))
+            const awsImagePath = new Date().toISOString() + '_' + generateRandomPathname() + path.extname(imagePath)
+            console.log(imagePath)
+            console.log(path.extname(imagePath))
+            console.log(awsImagePath)
+            const prom = pgClient.query(
+              `INSERT INTO "property-images" (id, image_pathname, property_id) VALUES (DEFAULT, $1, $2);`,
+              [
+                awsImagePath,
+                propertyId
+              ]
+            )
+              .then(() => {
+                return {
+                  imageData,
+                  awsImagePath
+                }
+              })
+            propertyImagePromises.push(prom)
+          }
+        })
+
+        return Promise.all([
+          Promise.all(userImagePromises),
+          Promise.all(propertyImagePromises)
+        ])
+      })
+      .then(async ([userImageInfos, propertyImageInfos]) => {
+        const objs = await s3.send(new ListObjectsV2Command({ Bucket: BUCKET }))
+        await s3.send(new DeleteObjectsCommand({
+          Bucket: BUCKET,
+          Delete: {
+            Objects: objs.Contents.map(o => ({ Key: o.Key }))
+          }
+        }))
+
+        userImageInfos.forEach(i => {
+          console.log('putting user image object to aws bucket: ', i.awsImagePath)
+          s3.send(new PutObjectCommand({
+            Bucket: BUCKET,
+            Key: i.awsImagePath,
+            Body: i.imageData
+          }))
+        })
+        propertyImageInfos.forEach(i => {
+          console.log('putting property image object to aws bucket: ', i.awsImagePath)
+          s3.send(new PutObjectCommand({
+            Bucket: BUCKET,
+            Key: i.awsImagePath,
+            Body: i.imageData
+          }))
+        })
       })
   } catch (err) {
     await pgClient.query('ROLLBACK')
-    shouldSeedBucket = false
-    console.log('rolling back due to error seeding users: ', err)
+    console.log('rolling back due to error seeding tables: ', err)
     throw err
   } finally {
-    console.log('releasing pgClient')
+    console.log('finished seeding users, properties, addresses, and bookings; releasing client')
     pgClient.release()
-  }
-
-  if (shouldSeedBucket) {
-    // TODO
   }
 }
 const resetTables = async () => {
   await deleteTables()
   await buildTables()
-  await seedSeeds(20, 1)
   await seedTables()
 }
 
